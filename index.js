@@ -6,7 +6,7 @@
 	if(typeof define !== 'function') {
 		window.define = function(deps, definition) {
 
-			var deps = [
+			deps = [
 				jQuery,
 				pintxos.inherit,
 				pintxos.Component,
@@ -91,6 +91,8 @@
 
 		this._scrollable = (this.getSettings().useTranslate) ? new ScrollableHA(this.getScrollableEl()) : new ScrollableNative(this.getScrollableEl());
 
+		this._scrollable.init();
+
 		this.getScrollableEl().css({position: 'relative'});
 
 		this._on(this.getNav(), this._settings.events.click, 'a', this._onPagerClick);
@@ -106,6 +108,7 @@
         this.getScrollableEl().css({position: ''});
 
         this._scrollable.destroy();
+        this._scrollable = undefined;
 
         Slider._super.destroy.call(this);
     };
