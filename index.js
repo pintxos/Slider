@@ -51,6 +51,7 @@
 		speed: 500,
         orientation: 'horizontal',
        	useTranslate: false,
+       	easing: 'linear',
 		selectors: {
 			nav: '.pager',
 			btnNext: '.pager__next a',
@@ -77,6 +78,9 @@
 
 	inherit(Slider, Component);
 
+	Slider.NEXT = 'next';
+	Slider.PREV = 'prev';
+
 	/* Methods
 	----------------------------------------------- */
 	Slider.prototype.init = function () {
@@ -85,9 +89,9 @@
 
 		this._isAnimating = false;
 
-		this.getScrollableEl().css({position: 'relative'});
-
 		this._scrollable = (this.getSettings().useTranslate) ? new ScrollableHA(this.getScrollableEl()) : new ScrollableNative(this.getScrollableEl());
+
+		this.getScrollableEl().css({position: 'relative'});
 
 		this._on(this.getNav(), this._settings.events.click, 'a', this._onPagerClick);
 		this._on(this.getScrollableEl(), 'scroll', this._onScroll);
@@ -107,7 +111,12 @@
     };
 
 	Slider.prototype.goToItem = function (item, pos, animate) {
+
 		var $item, position, itemPos, containerPos, itemSize;
+
+		if(this.isAnimating()) {
+			return this;
+		}
 
 		// shuffeling arguments ...
 		if(typeof item === 'number') {
@@ -119,25 +128,20 @@
 		animate = (typeof pos === 'boolean') ? pos : animate;
 		animate = (typeof animate === 'undefined') ? true : animate;
 
-		// stop the animation if it's still running
-		if(this.animation !== undefined) {
-			this.getScrollableEl().stop();
-		}
-
 		// positioned left
 		position = this.getItemOffset($item);
 		itemSize = this.getItemSize($item);
 
 		if(pos === 'center') {
-			position = position - ((this.getMaskSize() / 2) - (itemSize / 2));
+			position = position - ((this._scrollable.getMaskSize() / 2) - (itemSize / 2));
 		}else if (pos === 'right') {
-			position = position - (this.getMaskSize() - itemSize);
+			position = position - (this._scrollable.getMaskSize() - itemSize);
 		}
 
 		position = Math.ceil(position);
 
-		if(position >= this.getMaxScrollPos() - 1) {
-			position = this.getMaxScrollPos();
+		if(position >= this._scrollable.getMaxScrollPos() - 1) {
+			position = this._scrollable.getMaxScrollPos();
 		}
 
 		if(position < 0) {
@@ -149,7 +153,7 @@
 		if(animate) {
 			this.slideTo(position, this._settings.speed);
 		}else{
-			this.setScrollPos(position);
+			this._scrollable.setScrollPos(position);
 		}
 
 		return this;
@@ -162,7 +166,9 @@
 
 		this._isAnimating = true;
 
-		animation = new AnimationTimeline(duration);
+		animation = new AnimationTimeline(duration, {
+			easing: this.getSettings().easing
+		});
 
 		currPos = this._scrollable.getScrollPos();
 		direction = (pos > currPos);
@@ -203,8 +209,8 @@
 			offset;
 
 		$children = this.getChildren();
-		maskWidth = this.getMaskSize();
-		offset = this.getScrollPos();
+		maskWidth = this._scrollable.getMaskSize();
+		offset = this._scrollable.getScrollPos();
 		visibleItems = [];
 
 		for(var i = 0, len = $children.length; i < len; i ++) {
@@ -227,40 +233,33 @@
 		return visibleItems;
 	};
 
-	Slider.prototype.next = function () {
+	Slider.prototype.getNextItem = function (dir) {
 		var visibleItems, newIndex;
 
-		if(this.isAnimating()) {
-			return;
-		}
-
 		visibleItems = this.getVisibleItems();
-		newIndex = visibleItems[visibleItems.length - 1].index + 1;
+		newIndex = (dir === Slider.NEXT) ? visibleItems[visibleItems.length - 1].index + 1 : visibleItems[0].index - 1;
 
 		if(newIndex > this.getChildren().length - 1) {
-			return;
+			newIndex = this.getChildren().length - 1;
 		}
 
-		this.goToItem(newIndex);
+		if(newIndex < 0) {
+			newIndex = 0;
+		}
+
+		return newIndex;
+	};
+
+	Slider.prototype.next = function () {
+
+		this.goToItem(this.getNextItem(Slider.NEXT));
 
 		return this;
 	};
 
 	Slider.prototype.prev = function () {
-		var visibleItems, newIndex;
 
-		if(this.isAnimating()) {
-			return;
-		}
-
-		visibleItems = this.getVisibleItems();
-		newIndex = visibleItems[0].index - 1;
-
-		if(newIndex < 0) {
-			return;
-		}
-
-		this.goToItem(newIndex, 'right');
+		this.goToItem(this.getNextItem(Slider.PREV), 'right');
 
 		return this;
 	};
@@ -278,13 +277,13 @@
 		$prev = this.getBtnPrev().parent();
 		offset = 5;
 
-		if(!this.isBeginReached(offset)) {
+		if(!this._scrollable.isBeginReached(offset)) {
 			$prev.addClass(navActiveClass);
 		}else{
 			$prev.removeClass(navActiveClass);
 		}
 
-		if(!this.isEndReached(offset)) {
+		if(!this._scrollable.isEndReached(offset)) {
 			$next.addClass(navActiveClass);
 		}else{
 			$next.removeClass(navActiveClass);
@@ -295,16 +294,20 @@
 	};
 
 	Slider.prototype.getItemOffset = function ($item) {
-        var offset = this.scrollable._getProp('offset');
+        var offset = this._scrollable._getProp('offset');
 		return this._scrollable.getScrollPos() + $item.position()[offset] + parseInt($item.css('margin'+capitalize(offset)), 10);
 	};
 
 	Slider.prototype.getItemSize = function ($item) {
 		var method;
 
-		method = 'outer' + capitalize(this._getProp('size'));
+		method = 'outer' + capitalize(this._scrollable._getProp('size'));
 
 		return $item[method]();
+	};
+
+	Slider.prototype.getScrollableEl = function () {
+		return this._query(this.getSettings().selectors.scrollableEl);
 	};
 
 	Slider.prototype.refresh = function () {
@@ -359,8 +362,6 @@
 			this.prev();
 		}
 	};
-
-
 
 	function capitalize(string) {
 		return string.charAt(0).toUpperCase() + string.slice(1);

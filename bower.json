@@ -2,6 +2,7 @@
 	"name": "pintxos-slider",
 	"version": "0.0.0",
 	"homepage": "https://github.com/pintxos/Slider",
+	"main": "index.js",
 	"ignore": [
 		"**/.*",
 		"node_modules",
