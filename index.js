@@ -5,8 +5,18 @@
 	// UMD
 	if(typeof define !== 'function') {
 		window.define = function(deps, definition) {
+
+			var deps = [
+				jQuery,
+				pintxos.inherit,
+				pintxos.Component,
+				pintxos.AnimationTimeline,
+				pintxos.ScrollableNative,
+				pintxos.ScrollableHA
+			];
+
 			window.pintxos = window.pintxos || {};
-			window.pintxos.Slider = definition(jQuery, pintxos.inherit, pintxos.Component, pintxos.AnimationTimeline, pintxos.ScrollableNative, pintxos.ScrollableHA);
+			window.pintxos.Slider = definition.apply(this, deps);
 			define = null;
 		};
 	}
@@ -38,17 +48,17 @@
 	/* Default settings
 	----------------------------------------------- */
 	_defaults = {
-		createNav: false,
 		speed: 500,
         orientation: 'horizontal',
+       	useTranslate: false,
 		selectors: {
 			nav: '.pager',
-			btnNext: '.lnkNext a',
-			btnPrev: '.lnkPrev a',
-			scrollableEl: '> .main'
+			btnNext: '.pager__next a',
+			btnPrev: '.pager__prev a',
+			scrollableEl: '.slider__scrollable'
 		},
 		css: {
-			navActiveClass: 'jActive'
+			navActiveClass: 'js-is-active'
 		},
 		events: {
 			click: 'click',
@@ -77,9 +87,8 @@
 
 		this.getScrollableEl().css({position: 'relative'});
 
-        this.createPager();
+		this._scrollable = (this.getSettings().useTranslate) ? new ScrollableHA(this.getScrollableEl()) : new ScrollableNative(this.getScrollableEl());
 
-		// bind events
 		this._on(this.getNav(), this._settings.events.click, 'a', this._onPagerClick);
 		this._on(this.getScrollableEl(), 'scroll', this._onScroll);
 		this._on($win, 'resize', this._onResize);
@@ -91,6 +100,9 @@
 
     Slider.prototype.destroy = function () {
         this.getScrollableEl().css({position: ''});
+
+        this._scrollable.destroy();
+
         Slider._super.destroy.call(this);
     };
 
@@ -254,26 +266,28 @@
 	};
 
 	Slider.prototype.getNav = function () {
-		return this._query('> header .pager');
+		return this._query(this.getSettings().selectors.pager);
 	};
 
 	Slider.prototype.updateNav = function () {
 
-		var navActiveClass, offset;
+		var navActiveClass, offset, $next, $prev;
 
 		navActiveClass = this._settings.css.navActiveClass;
+		$next = this.getBtnNext().parent();
+		$prev = this.getBtnPrev().parent();
 		offset = 5;
 
 		if(!this.isBeginReached(offset)) {
-			this.getBtnPrev().parent().addClass(navActiveClass);
+			$prev.addClass(navActiveClass);
 		}else{
-			this.getBtnPrev().parent().removeClass(navActiveClass);
+			$prev.removeClass(navActiveClass);
 		}
 
 		if(!this.isEndReached(offset)) {
-			this.getBtnNext().parent().addClass(navActiveClass);
+			$next.addClass(navActiveClass);
 		}else{
-			this.getBtnNext().parent().removeClass(navActiveClass);
+			$next.removeClass(navActiveClass);
 		}
 
 		return this;
@@ -281,8 +295,8 @@
 	};
 
 	Slider.prototype.getItemOffset = function ($item) {
-        var offset = this._getProp('offset');
-		return this.getScrollPos() + $item.position()[offset] + parseInt($item.css('margin'+capitalize(offset)), 10);
+        var offset = this.scrollable._getProp('offset');
+		return this._scrollable.getScrollPos() + $item.position()[offset] + parseInt($item.css('margin'+capitalize(offset)), 10);
 	};
 
 	Slider.prototype.getItemSize = function ($item) {
@@ -306,19 +320,13 @@
 	};
 
 	Slider.prototype.getBtnNext = function () {
-		return this._getBtn('Next');
+		return this._query(this.getSettings().selectors.btnNext);
 	};
 
 	Slider.prototype.getBtnPrev = function () {
-		return this._getBtn('Prev');
+		return this._query(this.getSettings().selectors.btnPrev);
 	};
 
-	Slider.prototype._getBtn = function (dir) {
-		var sel, name;
-		name = 'btn' + dir;
-		sel = this._settings.selectors[name];
-		return this._query(sel, this.getNav());
-	};
 
 	/* Event handlers
 	----------------------------------------------- */
