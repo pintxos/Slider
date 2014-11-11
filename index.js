@@ -49,9 +49,9 @@
 	----------------------------------------------- */
 	_defaults = {
 		speed: 500,
-        orientation: 'horizontal',
-       	useTranslate: false,
-       	easing: 'linear',
+		orientation: 'horizontal',
+		useTranslate: false,
+		easing: 'linear',
 		selectors: {
 			nav: '.pager',
 			btnNext: '.pager__next a',
@@ -104,14 +104,14 @@
 
 	};
 
-    Slider.prototype.destroy = function () {
-        this.getScrollableEl().css({position: ''});
+	Slider.prototype.destroy = function () {
+		this.getScrollableEl().css({position: ''});
 
-        this._scrollable.destroy();
-        this._scrollable = undefined;
+		this._scrollable.destroy();
+		this._scrollable = undefined;
 
-        Slider._super.destroy.call(this);
-    };
+		Slider._super.destroy.call(this);
+	};
 
 	Slider.prototype.goToItem = function (item, pos, animate) {
 
@@ -297,7 +297,7 @@
 	};
 
 	Slider.prototype.getItemOffset = function ($item) {
-        var offset = this._scrollable._getProp('offset');
+		var offset = this._scrollable._getProp('offset');
 		return this._scrollable.getScrollPos() + $item.position()[offset] + parseInt($item.css('margin'+capitalize(offset)), 10);
 	};
 
