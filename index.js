@@ -52,10 +52,11 @@
 		orientation: 'horizontal',
 		useTranslate: false,
 		easing: 'linear',
+		generateNav: true,
 		selectors: {
-			nav: '.pager',
-			btnNext: '.pager__next a',
-			btnPrev: '.pager__prev a',
+			pager: '.pager',
+			btnNext: '.pager__next',
+			btnPrev: '.pager__prev',
 			scrollableEl: '.slider__scrollable'
 		},
 		css: {
@@ -64,6 +65,10 @@
 		events: {
 			click: 'click',
 			beforeSlide: 'beforeSlide.Slider'
+		},
+		fus: {
+			next: 'next',
+			prev: 'previous'
 		}
 	};
 
@@ -78,6 +83,8 @@
 
 	inherit(Slider, Component);
 
+	/* Constants
+	----------------------------------------------- */
 	Slider.NEXT = 'next';
 	Slider.PREV = 'prev';
 
@@ -95,7 +102,11 @@
 
 		this.getScrollableEl().css({position: 'relative'});
 
-		this._on(this.getNav(), this._settings.events.click, 'a', this._onPagerClick);
+		if(this.getSettings().generateNav) {
+			this._generateNav();
+		}
+
+		this._on(this.getNav(), this._settings.events.click, 'button', this._onPagerClick);
 		this._on(this.getScrollableEl(), 'scroll', this._onScroll);
 		this._on($win, 'resize', this._onResize);
 
@@ -105,17 +116,26 @@
 	};
 
 	Slider.prototype.destroy = function () {
-		this.getScrollableEl().css({position: ''});
 
+		this.getScrollableEl().css({position: ''});
 		this._scrollable.destroy();
+
+		if(this._isHeaderGenerated) {
+			this.getEl().find('> header').remove();
+		}else {
+			this.getNav().remove();
+		}
+
 		this._scrollable = undefined;
+		this._isHeaderGenerated = undefined;
+		this._isAnimating = undefined;
 
 		Slider._super.destroy.call(this);
 	};
 
 	Slider.prototype.goToItem = function (item, pos, animate) {
 
-		var $item, position, itemPos, containerPos, itemSize;
+		var $item, position, itemSize;
 
 		if(this.isAnimating()) {
 			return this;
@@ -254,16 +274,12 @@
 	};
 
 	Slider.prototype.next = function () {
-
 		this.goToItem(this.getNextItem(Slider.NEXT));
-
 		return this;
 	};
 
 	Slider.prototype.prev = function () {
-
 		this.goToItem(this.getNextItem(Slider.PREV), 'right');
-
 		return this;
 	};
 
@@ -271,25 +287,51 @@
 		return this._query(this.getSettings().selectors.pager);
 	};
 
+	Slider.prototype._generateNav = function () {
+		var html, fus, $pager, $header;
+
+		fus = this.getSettings().fus;
+
+		html = '<nav class="pager">';
+		html += '<button class="pager__prev"><span>'+ fus.prev +'</span></button>';
+		html += '<button class="pager__next"><span>'+ fus.next +'</span></button>';
+		html += '</nav>';
+
+		$pager = $(html);
+		$header = this.getEl().find('> header');
+
+		if($header.length === 0) {
+			this._isHeaderGenerated = true;
+			$header = $('<header/>');
+			$header.prependTo(this.getEl());
+		}
+
+		$pager.appendTo($header);
+	};
+
 	Slider.prototype.updateNav = function () {
 
 		var navActiveClass, offset, $next, $prev;
 
 		navActiveClass = this._settings.css.navActiveClass;
-		$next = this.getBtnNext().parent();
-		$prev = this.getBtnPrev().parent();
+		$next = this.getBtnNext();
+		$prev = this.getBtnPrev();
 		offset = 5;
 
 		if(!this._scrollable.isBeginReached(offset)) {
 			$prev.addClass(navActiveClass);
+			$prev.removeAttr('disabled');
 		}else{
 			$prev.removeClass(navActiveClass);
+			$prev.attr('disabled', 'disabled');
 		}
 
 		if(!this._scrollable.isEndReached(offset)) {
 			$next.addClass(navActiveClass);
+			$next.removeAttr('disabled');
 		}else{
 			$next.removeClass(navActiveClass);
+			$next.attr('disabled', 'disabled');
 		}
 
 		return this;
@@ -355,13 +397,13 @@
 			return;
 		}
 
-		$target = $(e.target);
+		$target = $(e.currentTarget);
 
-		if($target[0] === this.getBtnNext()[0]) {
+		if($target.is(this.getBtnNext())) {
 			this.next();
 		}
 
-		if($target[0] === this.getBtnPrev()[0]) {
+		if($target.is(this.getBtnPrev())) {
 			this.prev();
 		}
 	};
