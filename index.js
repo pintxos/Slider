@@ -222,15 +222,19 @@
 		return this._isAnimating;
 	};
 
-	Slider.prototype.getVisibleItems = function () {
+	Slider.prototype.getVisibleItems = function (strict) {
 		var $children,
 			maskWidth,
 			visibleItems,
 			elOffset,
 			elWidth,
-			position,
-			offset;
+			tolerance,
+			offset,
+			beginIntoView,
+			endIntoView;
 
+		strict = (typeof strict === 'undefined') ? true : strict;
+		tolerance = 3;
 		$children = this.getChildren();
 		maskWidth = this._scrollable.getMaskSize();
 		offset = this._scrollable.getScrollPos();
@@ -244,7 +248,12 @@
 			elWidth = this.getItemSize($child);
 
 			// @TODO see how we can fix pixel rounding issues in more decent way ...
-			if(elWidth + elOffset <= (offset + maskWidth) + 3 && elOffset >= offset - 3) {
+			beginIntoView = elOffset >= offset - tolerance && elOffset <= offset + maskWidth + tolerance;
+			endIntoView = elWidth + elOffset <= offset + maskWidth + tolerance && elWidth + elOffset >= offset - tolerance;
+
+			// If strict is true check if te beginning AND the end of the element is visible, otherwise we only
+			// check if the beginning OR the end is visible.
+			if((strict && beginIntoView && endIntoView) || (!strict && (beginIntoView || endIntoView))) {
 
 				visibleItems.push({
 					el: $child,
@@ -260,7 +269,17 @@
 		var visibleItems, newIndex;
 
 		visibleItems = this.getVisibleItems();
-		newIndex = (dir === Slider.NEXT) ? visibleItems[visibleItems.length - 1].index + 1 : visibleItems[0].index - 1;
+
+		if(visibleItems.length === 0) {
+
+			// If there are no items which are fully visible,
+			// check for items that are partialy visible
+			visibleItems = this.getVisibleItems(false);
+			newIndex = (dir === Slider.NEXT) ? visibleItems[visibleItems.length - 1].index : visibleItems[0].index;
+
+		}else {
+			newIndex = (dir === Slider.NEXT) ? visibleItems[visibleItems.length - 1].index + 1 : visibleItems[0].index - 1;
+		}
 
 		if(newIndex > this.getChildren().length - 1) {
 			newIndex = this.getChildren().length - 1;
@@ -345,9 +364,7 @@
 
 	Slider.prototype.getItemSize = function ($item) {
 		var method;
-
 		method = 'outer' + capitalize(this._scrollable._getProp('size'));
-
 		return $item[method]();
 	};
 
