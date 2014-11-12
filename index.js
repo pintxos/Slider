@@ -83,13 +83,21 @@
 
 	inherit(Slider, Component);
 
+
 	/* Constants
 	----------------------------------------------- */
 	Slider.NEXT = 'next';
 	Slider.PREV = 'prev';
 
+
 	/* Methods
 	----------------------------------------------- */
+
+	/**
+	 * Initialise the slider.
+	 *
+	 * @return {Slider}
+	 */
 	Slider.prototype.init = function () {
 
 		Slider._super.init.call(this);
@@ -113,8 +121,15 @@
 		this.goToItem(0, false);
 		this.updateNav();
 
+		return this;
+
 	};
 
+	/**
+	 * Destroy the slider
+	 *
+	 * @return {Slider}
+	 */
 	Slider.prototype.destroy = function () {
 
 		this.getScrollableEl().css({position: ''});
@@ -131,11 +146,21 @@
 		this._isAnimating = undefined;
 
 		Slider._super.destroy.call(this);
+
+		return this;
 	};
 
-	Slider.prototype.goToItem = function (item, pos, animate) {
+	/**
+	 * Navigates the slider to a given item within the list, animated or not.
+	 *
+	 * @param  {Number/jQuery} can be the actual element or it's index
+	 * @param  {String} left|center|right (defaults to left)
+	 * @param  {Boolean} (defaults to true)
+	 * @return {Slider}
+	 */
+	Slider.prototype.goToItem = function (item, alignment, animate) {
 
-		var $item, position, itemSize;
+		var index, $item, position, itemSize;
 
 		if(this.isAnimating()) {
 			return this;
@@ -143,21 +168,23 @@
 
 		// shuffeling arguments ...
 		if(typeof item === 'number') {
+			index = item;
 			$item = this.getChild(item);
 		}else{
 			$item = item;
+			index = this.getChildren().index($item);
 		}
 
-		animate = (typeof pos === 'boolean') ? pos : animate;
+		animate = (typeof alignment === 'boolean') ? alignment : animate;
 		animate = (typeof animate === 'undefined') ? true : animate;
 
 		// positioned left
-		position = this.getItemOffset($item);
-		itemSize = this.getItemSize($item);
+		position = this.getItemOffset(index);
+		itemSize = this.getItemSize(index);
 
-		if(pos === 'center') {
+		if(alignment === 'center') {
 			position = position - ((this._scrollable.getMaskSize() / 2) - (itemSize / 2));
-		}else if (pos === 'right') {
+		}else if (alignment === 'right') {
 			position = position - (this._scrollable.getMaskSize() - itemSize);
 		}
 
@@ -183,6 +210,13 @@
 
 	};
 
+	/**
+	 * Animates the slider to a given scroll position.
+	 *
+	 * @param  {number}
+	 * @param  {number}
+	 * @return {Slider}
+	 */
 	Slider.prototype.slideTo = function (pos, duration) {
 
 		var animation, direction, distance, currPos;
@@ -218,10 +252,21 @@
 		return this;
 	};
 
+	/**
+	 * Getter for _isAnimating
+	 * @return {Boolean}
+	 */
 	Slider.prototype.isAnimating = function () {
 		return this._isAnimating;
 	};
 
+	/**
+	 * When the strict param equals to true this function will return all fully visible items.
+	 * Otherwise it will also return items that are only partially visible.
+	 *
+	 * @param  {Boolean} (defaults to true)
+	 * @return {Array}
+	 */
 	Slider.prototype.getVisibleItems = function (strict) {
 		var $children,
 			maskWidth,
@@ -244,8 +289,8 @@
 
 			var $child = $children.eq(i);
 
-			elOffset = this.getItemOffset($child);
-			elWidth = this.getItemSize($child);
+			elOffset = this.getItemOffset(i);
+			elWidth = this.getItemSize(i);
 
 			// @TODO see how we can fix pixel rounding issues in more decent way ...
 			beginIntoView = elOffset >= offset - tolerance && elOffset <= offset + maskWidth + tolerance;
@@ -265,8 +310,21 @@
 		return visibleItems;
 	};
 
+	/**
+	 * Returns the next item to scroll into the viewport depending on
+	 * the current visible items and a given direction. If there are
+	 * only partially visible items it will return the last or the
+	 * first item depending on the direction.
+	 *
+	 * @param  {String}
+	 * @return {Number}
+	 */
 	Slider.prototype.getNextItem = function (dir) {
 		var visibleItems, newIndex;
+
+		if(dir !== Slider.NEXT && dir !== Slider.PREV) {
+			dir = Slider.NEXT;
+		}
 
 		visibleItems = this.getVisibleItems();
 
@@ -292,20 +350,28 @@
 		return newIndex;
 	};
 
+	/**
+	 * Slide to the next set of items
+	 * @return {Slider}
+	 */
 	Slider.prototype.next = function () {
 		this.goToItem(this.getNextItem(Slider.NEXT));
 		return this;
 	};
 
+	/**
+	 * Slide to the previous set of items
+	 * @return {Slider}
+	 */
 	Slider.prototype.prev = function () {
 		this.goToItem(this.getNextItem(Slider.PREV), 'right');
 		return this;
 	};
 
-	Slider.prototype.getNav = function () {
-		return this._query(this.getSettings().selectors.pager);
-	};
-
+	/**
+	 * Generates the HTML needed for the pager element
+	 * @return {void}
+	 */
 	Slider.prototype._generateNav = function () {
 		var html, fus, $pager, $header;
 
@@ -328,6 +394,12 @@
 		$pager.appendTo($header);
 	};
 
+	/**
+	 * Updates the pager. Adds an active css class
+	 * and toggles the disabled attribute.
+	 *
+	 * @return {Slider}
+	 */
 	Slider.prototype.updateNav = function () {
 
 		var navActiveClass, offset, $next, $prev;
@@ -357,15 +429,42 @@
 
 	};
 
-	Slider.prototype.getItemOffset = function ($item) {
-		var offset = this._scrollable._getProp('offset');
+	/**
+	 * Calculates the offset of an item relative to the scrollable element.
+	 * Takes the current scrollLeft/scrollTop into account.
+	 *
+	 * @param  {Number}
+	 * @return {Number}
+	 */
+	Slider.prototype.getItemOffset = function (index) {
+		var offset, $item;
+
+		$item = this.getChild(index);
+		offset = this._scrollable._getProp('offset');
+
 		return this._scrollable.getScrollPos() + $item.position()[offset] + parseInt($item.css('margin'+capitalize(offset)), 10);
 	};
 
-	Slider.prototype.getItemSize = function ($item) {
-		var method;
+	/**
+	 * Calculates the size of an element at the given index.
+	 *
+	 * @param  {Number}
+	 * @return {Number}
+	 */
+	Slider.prototype.getItemSize = function (index) {
+		var method, $item;
+
+		$item = this.getChild(index);
 		method = 'outer' + capitalize(this._scrollable._getProp('size'));
+
 		return $item[method]();
+	};
+
+
+	/* Element getters
+	----------------------------------------------- */
+	Slider.prototype.getNav = function () {
+		return this._query(this.getSettings().selectors.pager);
 	};
 
 	Slider.prototype.getScrollableEl = function () {
