@@ -19,6 +19,7 @@
     "pintxos-component": ">=1.1.2",
     "pintxos-inherit": ">=2.0.0",
     "pintxos-scrollable_ha": ">=1.0.0",
-    "pintxos-scrollable_native": ">=1.0.0"
+    "pintxos-scrollable_native": ">=1.0.1",
+    "pintxos-animation_timeline": ">=1.0.1"
   }
 }
