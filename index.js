@@ -88,6 +88,8 @@
 	----------------------------------------------- */
 	Slider.NEXT = 'next';
 	Slider.PREV = 'prev';
+	Slider.HORIZONTAL = 'horizontal';
+	Slider.VERTICAL = 'vertical';
 
 
 	/* Methods
@@ -100,11 +102,17 @@
 	 */
 	Slider.prototype.init = function () {
 
+		var scrollableOptions;
+
 		Slider._super.init.call(this);
+
+		scrollableOptions = {
+			orientation: this.getSettings().orientation
+		};
 
 		this._isAnimating = false;
 
-		this._scrollable = (this.getSettings().useTranslate) ? new ScrollableHA(this.getScrollableEl()) : new ScrollableNative(this.getScrollableEl());
+		this._scrollable = (this.getSettings().useTranslate) ? new ScrollableHA(this.getScrollableEl()[0], scrollableOptions) : new ScrollableNative(this.getScrollableEl()[0], scrollableOptions);
 
 		this._scrollable.init();
 
