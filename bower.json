@@ -1,25 +1,25 @@
 {
-  "name": "pintxos-slider",
-  "version": "0.1.0",
-  "homepage": "https://github.com/pintxos/Slider",
-  "main": "index.js",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "Gruntfile.js",
-    "package.json"
-  ],
-  "authors": [
-    "Jelle Versele"
-  ],
-  "dependencies": {
-    "jquery": ">=1.7.0",
-    "pintxos-component": ">=1.1.2",
-    "pintxos-inherit": ">=2.0.0",
-    "pintxos-scrollable_ha": ">=1.0.0",
-    "pintxos-scrollable_native": ">=1.0.1",
-    "pintxos-animation_timeline": ">=1.0.1"
-  }
+	"name": "pintxos-slider",
+	"version": "0.1.0",
+	"homepage": "https://github.com/pintxos/Slider",
+	"main": "index.js",
+	"ignore": [
+		"**/.*",
+		"node_modules",
+		"bower_components",
+		"test",
+		"Gruntfile.js",
+		"package.json"
+	],
+	"authors": [
+		"Jelle Versele"
+	],
+	"dependencies": {
+		"jquery": ">=1.7.0",
+		"pintxos-component": ">=1.1.2",
+		"pintxos-inherit": ">=2.0.0",
+		"pintxos-scrollable_ha": ">=1.0.1",
+		"pintxos-scrollable_native": ">=1.0.1",
+		"pintxos-animation_timeline": ">=1.0.1"
+	}
 }
