@@ -76,7 +76,7 @@
 	----------------------------------------------- */
 	Slider = function (el, options) {
 		this._settings = $.extend(true, {}, _defaults, options);
-		ScrollableNative.call(this, el, this._settings);
+		Component.call(this, el, this._settings);
 
 		this._uid = _uid ++;
 	};
