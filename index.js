@@ -88,8 +88,13 @@
 	----------------------------------------------- */
 	Slider.NEXT = 'next';
 	Slider.PREV = 'prev';
+
 	Slider.HORIZONTAL = 'horizontal';
 	Slider.VERTICAL = 'vertical';
+
+	Slider.END = 'end';
+	Slider.BEGIN = 'begin';
+	Slider.MIDDLE = 'middle';
 
 
 	/* Methods
@@ -122,7 +127,7 @@
 			this._generateNav();
 		}
 
-		this._on(this.getNav(), this._settings.events.click, 'button', this._onPagerClick);
+		this._on(this.getNav(), this._settings.events.click, 'button, a', this._onPagerClick);
 		this._on(this.getScrollableEl(), 'scroll', this._onScroll);
 		this._on($win, 'resize', this._onResize);
 
@@ -190,9 +195,9 @@
 		position = this.getItemOffset(index);
 		itemSize = this.getItemSize(index);
 
-		if(alignment === 'center') {
+		if(alignment === Slider.MIDDLE) {
 			position = position - ((this._scrollable.getMaskSize() / 2) - (itemSize / 2));
-		}else if (alignment === 'right') {
+		}else if (alignment === Slider.END) {
 			position = position - (this._scrollable.getMaskSize() - itemSize);
 		}
 
@@ -372,7 +377,7 @@
 	 * @return {Slider}
 	 */
 	Slider.prototype.prev = function () {
-		this.goToItem(this.getNextItem(Slider.PREV), 'right');
+		this.goToItem(this.getNextItem(Slider.PREV), Slider.END);
 		return this;
 	};
 
