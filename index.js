@@ -344,7 +344,7 @@
 		if(visibleItems.length === 0) {
 
 			// If there are no items which are fully visible,
-			// check for items that are partialy visible
+			// check for items that are partially visible
 			visibleItems = this.getVisibleItems(false);
 			newIndex = (dir === Slider.NEXT) ? visibleItems[visibleItems.length - 1].index : visibleItems[0].index;
 
@@ -473,6 +473,10 @@
 		return $item[method]();
 	};
 
+	Slider.prototype.refresh = function () {
+		return this.updateNav();
+	};
+
 
 	/* Element getters
 	----------------------------------------------- */
@@ -482,10 +486,6 @@
 
 	Slider.prototype.getScrollableEl = function () {
 		return this._query(this.getSettings().selectors.scrollableEl);
-	};
-
-	Slider.prototype.refresh = function () {
-		return this.updateNav();
 	};
 
 	Slider.prototype.getChildren = function () {
@@ -537,10 +537,16 @@
 		}
 	};
 
+
+	/* Helper functions
+	----------------------------------------------- */
 	function capitalize(string) {
 		return string.charAt(0).toUpperCase() + string.slice(1);
 	}
 
+
+	/* Export
+	----------------------------------------------- */
 	return Slider;
 
 });
