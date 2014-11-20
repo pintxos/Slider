@@ -169,6 +169,7 @@
 	 * @param  {Number/jQuery} can be the actual element or it's index
 	 * @param  {String} left|center|right (defaults to left)
 	 * @param  {Boolean} (defaults to true)
+	 *
 	 * @return {Slider}
 	 */
 	Slider.prototype.goToItem = function (item, alignment, animate) {
@@ -228,6 +229,7 @@
 	 *
 	 * @param  {number}
 	 * @param  {number}
+	 *
 	 * @return {Slider}
 	 */
 	Slider.prototype.slideTo = function (pos, duration) {
@@ -267,6 +269,7 @@
 
 	/**
 	 * Getter for _isAnimating
+	 *
 	 * @return {Boolean}
 	 */
 	Slider.prototype.isAnimating = function () {
@@ -278,6 +281,7 @@
 	 * Otherwise it will also return items that are only partially visible.
 	 *
 	 * @param  {Boolean} (defaults to true)
+	 *
 	 * @return {Array}
 	 */
 	Slider.prototype.getVisibleItems = function (strict) {
@@ -330,6 +334,7 @@
 	 * first item depending on the direction.
 	 *
 	 * @param  {String}
+	 *
 	 * @return {Number}
 	 */
 	Slider.prototype.getNextItem = function (dir) {
@@ -365,6 +370,7 @@
 
 	/**
 	 * Slide to the next set of items
+	 *
 	 * @return {Slider}
 	 */
 	Slider.prototype.next = function () {
@@ -374,6 +380,7 @@
 
 	/**
 	 * Slide to the previous set of items
+	 *
 	 * @return {Slider}
 	 */
 	Slider.prototype.prev = function () {
@@ -383,6 +390,7 @@
 
 	/**
 	 * Generates the HTML needed for the pager element
+	 *
 	 * @return {void}
 	 */
 	Slider.prototype._generateNav = function () {
@@ -447,6 +455,7 @@
 	 * Takes the current scrollLeft/scrollTop into account.
 	 *
 	 * @param  {Number}
+	 *
 	 * @return {Number}
 	 */
 	Slider.prototype.getItemOffset = function (index) {
@@ -462,6 +471,7 @@
 	 * Calculates the size of an element at the given index.
 	 *
 	 * @param  {Number}
+	 *
 	 * @return {Number}
 	 */
 	Slider.prototype.getItemSize = function (index) {
