@@ -109,6 +109,8 @@
 
 		var scrollableOptions;
 
+		console.log(this.getScrollableEl());
+
 		Slider._super.init.call(this);
 
 		scrollableOptions = {

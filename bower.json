@@ -21,5 +21,8 @@
 		"pintxos-scrollable_ha": ">=1.0.1",
 		"pintxos-scrollable_native": ">=1.0.1",
 		"pintxos-animation_timeline": ">=1.0.1"
+	},
+	"devDependencies": {
+		"jasmine-jquery": "1.7.0"
 	}
 }
